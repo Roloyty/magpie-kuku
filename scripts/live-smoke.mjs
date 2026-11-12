@@ -3,9 +3,16 @@ import { fork } from "node:child_process"
 import { createInterface } from "node:readline"
 import { fileURLToPath } from "node:url"
 import { KukuAuthPlugin } from "../index.mjs"
+import { browserSignIn } from "../lib/browser.mjs"
+import { KukuClient } from "../lib/api.mjs"
 const plugin = await KukuAuthPlugin()
 console.log("Opening the Kuku website login window. Credentials stay in memory.")
-const flow = await plugin.auth.methods[0].authorize()
+const flow = await browserSignIn(async (cookies, { signal }) => {
+  const client = new KukuClient({ cookies }, { signal })
+  const session = await client.session()
+  return { type: "success", access: JSON.stringify(client.cookies), refresh: "", expires: 0,
+    accountId: session.uk, uid: session.uk, name: session.name, cardName: session.name, source: "kuku-web" }
+}, { timeout: 30 * 60 * 1000 })
 console.log("BROWSER_READY")
 const result = await flow.callback()
 if (result.type !== "success") { console.log(JSON.stringify({ login: false, error: result.error })); process.exitCode = 1 }

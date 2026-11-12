@@ -1,11 +1,11 @@
 {
   "name": "magpie-kuku-auth",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Unofficial Baidu Kuku AI provider for Magpie: isolated website sign-in, multiple accounts, daily check-in, credits and streaming chat",
   "type": "module",
   "main": "./opencode.mjs",
   "exports": { ".": "./opencode2.mjs" },
-  "files": ["index.mjs", "opencode.mjs", "opencode2.mjs", "lib/", "README.md", "LICENSE", "THIRD_PARTY_NOTICES.md"],
+  "files": ["index.mjs", "opencode.mjs", "opencode2.mjs", "lib/", "README.md", "VALIDATION.md", "LICENSE", "THIRD_PARTY_NOTICES.md"],
   "scripts": { "test": "node --test test/*.test.mjs", "check": "node scripts/check.mjs", "prepublishOnly": "npm test && npm run check" },
   "engines": { "node": ">=22" },
   "keywords": ["magpie", "magpie-plugin", "opencode", "opencode-plugin", "baidu", "kuku", "kukuai", "genflow", "库库"],
