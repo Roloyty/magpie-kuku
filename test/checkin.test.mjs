@@ -53,3 +53,14 @@ test("legacy LOGIN distinguishes reward zero from a confirmed positive reward", 
     assert.equal((await checkin(c)).outcome, reward ? "claimed" : "done")
   }
 })
+test("empty legacy token uses the official webpage, and requires server-side confirmation", async () => {
+  for (const success of [false, true]) {
+    const c = fake({ token: { errno: 0, data: { jsToken: null } } })
+    const request = c.request; let checked = false
+    c.request = async (path, init) => checked && path.includes('homepage')
+      ? { errno: 0, data: { signed_today: success, continuous_days: 4 } } : request(path, init)
+    let calls = 0
+    const result = await checkin(c, { browserCheckin: async () => { checked = true; calls++; return { state: 'signed' } } })
+    assert.equal(calls, 1); assert.equal(result.outcome, success ? 'claimed' : 'failed')
+  }
+})
