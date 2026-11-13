@@ -1,7 +1,7 @@
 import test from "node:test"
 import assert from "node:assert/strict"
 import vm from "node:vm"
-import { pageStateExpression } from "../lib/website-checkin.mjs"
+import { pageStateExpression, signinResponse } from "../lib/website-checkin.mjs"
 function dom(text, tip = "", challenge = false) {
   let clicks = 0
   const button = { innerText: text, click: () => clicks++, getBoundingClientRect: () => ({ width: 100, height: 30 }) }
@@ -23,4 +23,13 @@ test("official website button is pressed at most once; signed and challenge stat
 test("refuses to interact on other origins or pages", () => {
   const d = dom("立即签到"); d.context.location.origin = "https://evil.test"
   assert.equal(vm.runInNewContext(pageStateExpression, d.context).state, "wrong-page"); assert.equal(d.clicks(), 0)
+})
+test("real upstream risk codes are preserved rather than converted to a generic timeout", () => {
+  for (const errno of [8001, 8002, 8011, 8024]) {
+    const r = signinResponse({ errno, errmsg: "账号存在风险，请切换账号或设备参加活动" })
+    assert.equal(r.state, "captcha"); assert.equal(r.code, errno); assert.match(r.message, /风险/)
+  }
+  assert.equal(signinResponse({ errno: 0, data: {} }).state, "submitted")
+  assert.equal(signinResponse({ errno: 10152 }).already, true)
+  assert.equal(signinResponse({ errno: -6 }).state, "login")
 })

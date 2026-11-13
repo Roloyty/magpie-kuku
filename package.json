@@ -1,6 +1,6 @@
 {
   "name": "magpie-kuku-auth",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Unofficial Baidu Kuku AI provider for Magpie: isolated website sign-in, multiple accounts, daily check-in, credits and streaming chat",
   "type": "module",
   "main": "./opencode.mjs",

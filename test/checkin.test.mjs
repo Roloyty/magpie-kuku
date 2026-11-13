@@ -64,3 +64,24 @@ test("empty legacy token uses the official webpage, and requires server-side con
     assert.equal(calls, 1); assert.equal(result.outcome, success ? 'claimed' : 'failed')
   }
 })
+test("website risk is exposed as captcha and existing browser identity is passed through", async () => {
+  const c = fake({ token: { errno: 0, data: { jsToken: null } } })
+  c.browserProfile = "kuku-123456"; c.accountId = "uid-A"
+  const r = await checkin(c, { browserCheckin: async (_cookies, options) => {
+    assert.equal(options.profile, "kuku-123456"); assert.equal(options.uid, "uid-A")
+    return { state: "captcha", code: 8001, message: "账号存在风险" }
+  } })
+  assert.equal(r.outcome, "captcha"); assert.match(r.message, /8001.*风险/)
+})
+
+test("successful website submission waits for server confirmation without submitting twice", async () => {
+  const c = fake({ token: { errno: 0, data: { jsToken: null } } })
+  const request = c.request
+  let submitted = false, reads = 0, clicks = 0
+  c.request = async (path, init) => submitted && path.includes("homepage")
+    ? { errno: 0, data: { signed_today: ++reads >= 2 } } : request(path, init)
+  const result = await checkin(c, { browserCheckin: async () => {
+    submitted = true; clicks++; return { state: "submitted" }
+  } })
+  assert.equal(result.outcome, "claimed"); assert.equal(clicks, 1); assert.equal(reads, 2)
+})
